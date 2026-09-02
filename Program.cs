@@ -7,8 +7,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options=>
-options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-)
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 
