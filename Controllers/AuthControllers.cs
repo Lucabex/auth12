@@ -1,10 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using auth12.Data;
 using auth12.Models;
 using auth12.Records;
+using auth12.Services;
 using auth12.DTO;
 using Microsoft.EntityFrameworkCore;
+
 namespace auth12.Controllers;
+
 
 [ApiController]
 [Route("auth")]
@@ -13,10 +20,14 @@ public class AuthControllers : ControllerBase
 {
     private readonly IHttpClientFactory _client;
     private readonly AppDbContext _context;
-    public AuthControllers(IHttpClientFactory client,AppDbContext context)
+    private readonly IConfiguration _configuration;
+    private readonly JwtService _jwtService;
+    public AuthControllers(IHttpClientFactory client,AppDbContext context,IConfiguration configuration,JwtService jwtService)
     {
         _context = context;
         _client = client;
+        _configuration = configuration;
+        _jwtService = jwtService;
 
     }
     [HttpPost("reg")]
@@ -65,14 +76,15 @@ public class AuthControllers : ControllerBase
 
             if(user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.HashedPassword))
             {
-                return BadRequest("Invlid username or password");
+                return Unauthorized("Invlid username or password");
             }
-            var response = new LogResp
+            var tokenString = _jwtService.GenerateToken(user);
+            return Ok(new
             {
-                Name = user.Name,
-                Id = user.Id
-            };
-            return Ok(response);
+                Token = tokenString,
+                UserId = user.Id,
+                UserName = user.Name
+            });
             
         }catch(Exception ex)
         {
