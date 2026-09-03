@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using auth12.Data;
 using auth12.Models;
+using auth12.Records;
 using auth12.DTO;
 using Microsoft.EntityFrameworkCore;
 namespace auth12.Controllers;
@@ -78,5 +79,24 @@ public class AuthControllers : ControllerBase
             return StatusCode(503, "Service not available try agin later");
         }
     
+    }
+    [HttpGet("puzzle")]
+    public async Task<IActionResult> GetPuzzle()
+    {
+        try
+        {
+            var client = _client.CreateClient();
+            var url = "https://lichess.org/api/puzzle/daily";
+            var response =await client.GetFromJsonAsync<DailyPuzzle>(url);
+            if(response?.Puzzle?.Fen == null || response.Puzzle.Solution == null)
+            {
+                return StatusCode(503,"Service not available try again later");
+            }
+            return Ok(response);
+
+        }catch(Exception ex)
+        {
+            return StatusCode(503,"service not available please try agin later");
+        }
     }
 }
